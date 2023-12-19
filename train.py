@@ -31,7 +31,7 @@ data = Subset(data, mask)
 
 # Split data into train test val
 train_data, test_data, val_data = random_split(data, [0.8, 0.1, 0.1])
-train_loader = DataLoader(train_data, batch_size=256)
+train_loader = DataLoader(train_data, batch_size=64)
 test_loader = DataLoader(test_data)
 val_loader = DataLoader(val_data)
 
