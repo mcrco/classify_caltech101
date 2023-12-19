@@ -37,7 +37,7 @@ val_loader = DataLoader(val_data, batch_size=64, num_workers=2)
 
 # Train model
 wandb_logger = WandbLogger(log_model='all')
-trainer = L.Trainer(logger=wandb_logger, max_epochs=1)
+trainer = L.Trainer(logger=wandb_logger, max_epochs=5)
 trainer.fit(model=model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
 # Test model
