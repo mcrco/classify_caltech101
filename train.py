@@ -31,9 +31,9 @@ data = Subset(data, mask)
 
 # Split data into train test val
 train_data, test_data, val_data = random_split(data, [0.8, 0.1, 0.1])
-train_loader = DataLoader(train_data, batch_size=64, num_workers=15)
-test_loader = DataLoader(test_data, num_workers=15)
-val_loader = DataLoader(val_data, num_workers=15)
+train_loader = DataLoader(train_data, batch_size=64, num_workers=2)
+test_loader = DataLoader(test_data, num_workers=2)
+val_loader = DataLoader(val_data, num_workers=2)
 
 # Train model
 wandb_logger = WandbLogger(log_model='all')
