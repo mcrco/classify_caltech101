@@ -4,6 +4,7 @@ import lightning as L
 import torchmetrics
 from transformers import CLIPImageProcessor, CLIPVisionModelWithProjection
 from typing import List
+import wandb
 
 class CLIPVisionClassifier(L.LightningModule):
     def __init__(self, hidden_sizes:List):
@@ -54,18 +55,21 @@ class CLIPVisionClassifier(L.LightningModule):
         return preds
 
     def test_step(self, batch, batch_idx):
+        x, y = batch
         preds, loss, acc = self._get_preds_loss_accuracy(batch)
 
         # Log loss and metric
         self.log("test_loss", loss)
         self.log("test_accuracy", acc)
 
-        # Images
-        samples = batch[:3]
+        # Log images and classifications
+        num_samples = 1
+        images = x[:num_samples]
+        labels = y[:num_samples]
         log_list = []
-        for i in range(3):
-            img, truth = samples[i]
-            log_list.append(wandb.Image(img, caption=f'pred: {preds[i]}; truth: {truth}'))
+        for i in range(num_samples):
+            img, truth = images[i], labels[i]
+            log_list.append(wandb.Image(img, caption=f"pred: {preds[i]}; truth: {truth}"))
         self.logger.experiment.log({
             'Sample classification': log_list
         })
