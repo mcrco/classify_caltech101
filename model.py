@@ -53,12 +53,29 @@ class CLIPVisionClassifier(L.LightningModule):
         self.log("val_accuracy", acc)
         return preds
 
+    def test_step(self, batch, batch_idx):
+        preds, loss, acc = self._get_preds_loss_accuracy(batch)
+
+        # Log loss and metric
+        self.log("test_loss", loss)
+        self.log("test_accuracy", acc)
+
+        # Images
+        samples = batch[:3]
+        log_list = []
+        for i in range(3):
+            img, truth = samples[i]
+            log_list.append(wandb.Image(img, caption=f'pred: {preds[i]}; truth: {truth}'))
+        self.logger.experiment.log({
+            'Sample classification': log_list
+        })
+
     def forward(self, x):
         # x = self.enforce_3_channel_img(x)
         inputs = self.processor(images=x, return_tensors='pt')
         embeddings = self.encoder(**inputs).image_embeds
-        y = self.classifier(embeddings)
-        probs = nn.functional.softmax(y)
+        logits = self.classifier(embeddings)
+        probs = nn.functional.softmax(logits)
         return probs
 
     def configure_optimizers(self):

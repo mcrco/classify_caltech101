@@ -11,7 +11,7 @@ import numpy as np
 L.seed_everything(420, workers=True)
 
 # Create model and set it to use GPU
-model = CLIPVisionClassifier([256, 256])
+model = CLIPVisionClassifier([256, 128])
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
@@ -31,13 +31,13 @@ data = Subset(data, mask)
 
 # Split data into train test val
 train_data, test_data, val_data = random_split(data, [0.8, 0.1, 0.1])
-train_loader = DataLoader(train_data, batch_size=64)
-test_loader = DataLoader(test_data)
-val_loader = DataLoader(val_data)
+train_loader = DataLoader(train_data, batch_size=64, num_workers=15)
+test_loader = DataLoader(test_data, num_workers=15)
+val_loader = DataLoader(val_data, num_workers=15)
 
 # Train model
 wandb_logger = WandbLogger(log_model='all')
-trainer = L.Trainer(logger=wandb_logger, max_epochs=10)
+trainer = L.Trainer(logger=wandb_logger, max_epochs=5)
 trainer.fit(model=model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
 # Test model
