@@ -10,11 +10,11 @@ class CLIPVisionClassifier(L.LightningModule):
             super().__init__()
 
             # Turn any grayscale images into 3 channels for CLIP image processor
-            def convert(img):
-                if img.shape[1] != 3:
-                    return torch.broadcast_to(img, (1, 3, img.shape[2], img.shape[3]))
-                return img
-            self.enforce_3_channel_img = convert
+            # def convert(img):
+            #     if img.shape[1] != 3:
+            #         return torch.broadcast_to(img, (1, 3, img.shape[2], img.shape[3]))
+            #     return img
+            # self.enforce_3_channel_img = convert
 
             # Image processor for image encoder
             self.processor = CLIPImageProcessor.from_pretrained('openai/clip-vit-base-patch32', do_rescale=False , do_resize=True)
@@ -54,7 +54,7 @@ class CLIPVisionClassifier(L.LightningModule):
         return preds
 
     def forward(self, x):
-        x = self.enforce_3_channel_img(x)
+        # x = self.enforce_3_channel_img(x)
         inputs = self.processor(images=x, return_tensors='pt')
         embeddings = self.encoder(**inputs).image_embeds
         y = self.classifier(embeddings)
