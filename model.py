@@ -1,6 +1,7 @@
 import torch
 from torch import nn, optim
 import lightning as L
+import torchmetrics
 from transformers import CLIPImageProcessor, CLIPVisionModelWithProjection
 from typing import List
 
@@ -16,7 +17,7 @@ class CLIPVisionClassifier(L.LightningModule):
             self.enforce_3_channel_img = convert
 
             # Image processor for image encoder
-            self.processor = CLIPImageProcessor.from_pretrained('openai/clip-vit-base-patch32', do_rescale=False)
+            self.processor = CLIPImageProcessor.from_pretrained('openai/clip-vit-base-patch32', do_rescale=False , do_resize=True)
 
             # Image encoder used by CLIP
             self.encoder = CLIPVisionModelWithProjection.from_pretrained('openai/clip-vit-base-patch32')
@@ -34,16 +35,23 @@ class CLIPVisionClassifier(L.LightningModule):
 
             self.loss = nn.CrossEntropyLoss()
 
+            self.accuracy = torchmetrics.classification.Accuracy(task='multiclass', num_classes=101)
+
     def training_step(self, batch, batch_idx):
-        x, y = batch
-        x = self.enforce_3_channel_img(x)
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        inputs = self.processor(images=x, return_tensors='pt')
-        inputs.to(device)
-        embeddings = self.encoder(**inputs).image_embeds
-        y_hat = self.classifier(embeddings)
-        loss = self.loss(y_hat, y)
+        _, loss, acc = self._get_preds_loss_accuracy(batch)
+
+        # Log loss and accuracy
+        self.log('train_loss', loss)
+        self.log('train_accuracy', acc)
         return loss
+
+    def validation_step(self, batch, batch_idx):
+        preds, loss, acc = self._get_preds_loss_accuracy(batch)
+
+        # Log loss and metric
+        self.log("val_loss", loss)
+        self.log("val_accuracy", acc)
+        return preds
 
     def forward(self, x):
         x = self.enforce_3_channel_img(x)
@@ -56,3 +64,16 @@ class CLIPVisionClassifier(L.LightningModule):
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=1e-3)
         return optimizer
+
+    def _get_preds_loss_accuracy(self, batch):
+        x, y = batch
+        # x = self.enforce_3_channel_img(x)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        inputs = self.processor(images=x, return_tensors='pt')
+        inputs.to(device)
+        embeddings = self.encoder(**inputs).image_embeds
+        logits = self.classifier(embeddings)
+        preds = torch.argmax(logits, dim=1)
+        loss = self.loss(logits, y)
+        acc = self.accuracy(logits, y)
+        return preds, loss, acc
