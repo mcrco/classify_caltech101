@@ -1,0 +1,14 @@
+{
+    "random_seed": 420,
+    "hidden_sizes": [
+        256,
+        128
+    ],
+    "batch_size": 64,
+    "train_prop": 0.8,
+    "test_prop": 0.1,
+    "val_prop": 0.1,
+    "image_width": 300,
+    "image_height": 300,
+    "num_epochs": 5
+}
