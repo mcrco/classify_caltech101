@@ -6,11 +6,11 @@
 To train the model, simply run
 
 ```
-python train.py
+python src/train.py
 ```
 
 You can specify a specific config file using 
 
 ```
-python train.py -c <config-file-name>
+python src/train.py -c <config-file-name>
 ```
