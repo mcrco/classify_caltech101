@@ -10,5 +10,6 @@
     "val_prop": 0.1,
     "image_width": 300,
     "image_height": 300,
-    "num_epochs": 5
+    "num_epochs": 5,
+    "num_workers": 2
 }

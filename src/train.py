@@ -1,42 +1,15 @@
 import torch
-from torch.utils.data import Dataset, DataLoader, random_split, Subset
-from torchvision import datasets, transforms
-from torchvision.transforms import Resize, ToTensor
 import lightning as L
 from model import CLIPVisionClassifier
 from pytorch_lightning.loggers import WandbLogger
-import numpy as np
 import json
 import argparse
 import os
+from data import Caltech101DataModule
 
 abspath = os.path.abspath(__file__)
 dir_name = os.path.dirname(abspath)
 root_dir = os.path.abspath(os.path.join(dir_name, os.pardir))
-
-# Returns preprocessed data ready for dataloaders
-def get_filtered_data(img_size):
-    # Resize all images to specified size and convert from jpg to torch tensors
-    img_transform = transforms.Compose([
-        Resize(size=img_size),
-        ToTensor()
-    ])
-    data = datasets.Caltech101(root=os.path.join(root_dir, 'data'), download=True, transform=img_transform)
-
-    # Filter out black and white photos
-    mask = np.ones(len(data), dtype=bool)
-    for i in range(len(data)):
-        if data[i][0].shape[0] != 3:
-            mask[i] = False
-    return Subset(data, np.where(mask)[0])
-
-# Splits dataset into train, test, val based on split_props and returns dataloaders
-def get_dataloaders(dataset, split_props):
-    train_data, test_data, val_data = random_split(dataset, split_props)
-    train_loader = DataLoader(train_data, batch_size=config['batch_size'], num_workers=2)
-    test_loader = DataLoader(test_data, batch_size=config['batch_size'], num_workers=2)
-    val_loader = DataLoader(val_data, batch_size=config['batch_size'], num_workers=2)
-    return train_loader, test_loader, val_loader
 
 # Trains model based on config dict
 def train(config):
@@ -50,14 +23,23 @@ def train(config):
 
     # Get Dataloaders
     img_size = (config['image_height'], config['image_width'])
-    data = get_filtered_data(img_size)
-    split_props = [config['train_prop'], config['test_prop'], config['val_prop']]
-    train_loader, test_loader, val_loader = get_dataloaders(data, split_props)
+    data_module = Caltech101DataModule(
+        data_dir=os.path.join(root_dir, 'dataset'),
+        batch_size=config['batch_size'],
+        num_workers=config['num_workers'],
+        img_size=(config['image_height'], config['image_width']),
+        split_props=config['split_props']
+    )
 
     # Train model
     wandb_logger = WandbLogger(log_model='all')
-    trainer = L.Trainer(logger=wandb_logger, max_epochs=config['num_epochs'])
-    trainer.fit(model=model, train_dataloaders=train_loader, val_dataloaders=val_loader)
+    trainer = L.Trainer(
+        logger=wandb_logger, 
+        max_epochs=config['num_epochs'], 
+        accelerator='gpu', 
+
+    )
+    trainer.fit(model, data_module)
 
     # Test model
     trainer.test(dataloaders=test_loader)
