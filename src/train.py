@@ -36,9 +36,9 @@ if __name__ == '__main__':
 
     trainer = L.Trainer(
         logger=WandbLogger(log_model='all'), 
-        max_epochs=config['num_epochs'], 
+        max_epochs=config['num_epochs'],
         accelerator=config['accelerator'], 
-        devices=config['devices']
+        # devices=config['devices']
 
     )
 

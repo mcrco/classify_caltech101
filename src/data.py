@@ -15,21 +15,19 @@ class Caltech101DataModule(L.LightningDataModule):
         self.num_workers = num_workers
         self.img_size = img_size
         self.split_props = split_props
-        self.prepare_data_per_node = False
+        self.transform = transforms.Compose([
+            Resize(size=self.img_size),
+            ToTensor()
+        ])
 
     def prepare_data(self):
         datasets.Caltech101(root=self.data_dir, download=True)
 
     def setup(self, stage):
-        img_transform = transforms.Compose([
-            Resize(size=self.img_size),
-            ToTensor()
-        ])
-
         data = datasets.Caltech101(
                 root=self.data_dir, 
                 download=False, 
-                transform=img_transform
+                transform=self.transform
         )
         valid_indices = []
         for i in range(len(data)):
