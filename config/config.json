@@ -8,8 +8,12 @@
     "train_prop": 0.8,
     "test_prop": 0.1,
     "val_prop": 0.1,
+    "num_epochs": 5,
     "image_width": 300,
     "image_height": 300,
-    "num_epochs": 5,
-    "num_workers": 2
+    "num_workers": 2,
+    "accelerator": "gpu",
+    "devices": [
+        0
+    ]
 }

@@ -15,11 +15,12 @@ class Caltech101DataModule(L.LightningDataModule):
         self.num_workers = num_workers
         self.img_size = img_size
         self.split_props = split_props
+        self.prepare_data_per_node = False
 
     def prepare_data(self):
         datasets.Caltech101(root=self.data_dir, download=True)
 
-    def setup(self):
+    def setup(self, stage):
         img_transform = transforms.Compose([
             Resize(size=self.img_size),
             ToTensor()

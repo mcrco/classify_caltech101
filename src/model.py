@@ -30,8 +30,7 @@ class CLIPVisionClassifier(L.LightningModule):
                 if i < len(hidden_sizes) - 2:
                     layers.append(nn.ReLU())
             # Use GPU with neural net 
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            self.classifier = nn.Sequential(*layers).to(device)
+            self.classifier = nn.Sequential(*layers)
 
             self.loss = nn.CrossEntropyLoss()
 
@@ -86,9 +85,7 @@ class CLIPVisionClassifier(L.LightningModule):
 
     def _get_preds_loss_accuracy(self, batch):
         x, y = batch
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         inputs = self.processor(images=x, return_tensors='pt')
-        inputs.to(device)
         embeddings = self.encoder(**inputs).image_embeds
         logits = self.classifier(embeddings)
         preds = torch.argmax(logits, dim=1)
