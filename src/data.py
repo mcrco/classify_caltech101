@@ -1,12 +1,7 @@
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import datasets, transforms
 from torchvision.transforms import Resize, ToTensor
-import os
 import lightning as L
-
-abspath = os.path.abspath(__file__)
-dir_name = os.path.dirname(abspath)
-root_dir = os.path.abspath(os.path.join(dir_name, os.pardir))
 
 class Caltech101DataModule(L.LightningDataModule):
     def __init__(self, data_dir, batch_size, num_workers, img_size, split_props):

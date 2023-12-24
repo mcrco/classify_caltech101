@@ -1,4 +1,3 @@
-import torch
 import lightning as L
 from model import CLIPVisionClassifier
 from pytorch_lightning.loggers import WandbLogger
@@ -38,8 +37,8 @@ if __name__ == '__main__':
         logger=WandbLogger(log_model='all'), 
         max_epochs=config['num_epochs'],
         accelerator=config['accelerator'], 
-        # devices=config['devices']
-
+        devices=config['devices'],
+        deterministic=True
     )
 
     trainer.fit(model, data_module)
