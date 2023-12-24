@@ -66,7 +66,7 @@ class CLIPVisionClassifier(L.LightningModule):
         log_list = []
         for i in range(num_samples):
             img, truth = images[i], labels[i]
-            log_list.append(wandb.Image(img, caption=f"pred: {self.label_map[preds[i].item()]}; truth: {self.label_map[truth]}"))
+            log_list.append(wandb.Image(img, caption=f"pred: {self.label_map[preds[i].item()]}; truth: {self.label_map[truth.item()]}"))
         self.logger.experiment.log({
             'Sample classification': log_list
         })
