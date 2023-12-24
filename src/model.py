@@ -9,7 +9,7 @@ import wandb
 class CLIPVisionClassifier(L.LightningModule):
     """Image classifier that trains basic MLP on"""
 
-    def __init__(self, hidden_sizes:List):
+    def __init__(self, hidden_sizes:List, label_map):
             super().__init__()
 
             # Image processor for CLIP image encoder
@@ -21,6 +21,8 @@ class CLIPVisionClassifier(L.LightningModule):
             for param in self.encoder.parameters():
                 param.requires_grad = False
 
+            self.label_map = label_map
+
             # Lightweight neural net for embeddings
             hidden_sizes.insert(0, 512)
             hidden_sizes.append(101)
@@ -30,9 +32,7 @@ class CLIPVisionClassifier(L.LightningModule):
                 if i < len(hidden_sizes) - 2:
                     layers.append(nn.ReLU())
             self.classifier = nn.Sequential(*layers)
-
             self.loss = nn.CrossEntropyLoss()
-
             self.accuracy = torchmetrics.classification.Accuracy(task='multiclass', num_classes=101)
 
     def training_step(self, batch, batch_idx):
@@ -66,7 +66,7 @@ class CLIPVisionClassifier(L.LightningModule):
         log_list = []
         for i in range(num_samples):
             img, truth = images[i], labels[i]
-            log_list.append(wandb.Image(img, caption=f"pred: {preds[i]}; truth: {truth}"))
+            log_list.append(wandb.Image(img, caption=f"pred: {self.label_map[preds[i].item()]}; truth: {truth}"))
         self.logger.experiment.log({
             'Sample classification': log_list
         })

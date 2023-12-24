@@ -23,14 +23,18 @@ if __name__ == '__main__':
 
     L.seed_everything(config['random_seed'], workers=True)
 
-    model = CLIPVisionClassifier(config['hidden_sizes'])
-
     data_module = Caltech101DataModule(
         data_dir=os.path.join(root_dir, 'data'),
         batch_size=config['batch_size'],
         num_workers=config['num_workers'],
         img_size=(config['image_height'], config['image_width']),
         split_props=[config['train_prop'], config['test_prop'], config['val_prop']]
+    )
+    data_module.prepare_data()
+
+    model = CLIPVisionClassifier(
+        hidden_sizes=config['hidden_sizes'], 
+        label_map=data_module.label_map
     )
 
     trainer = L.Trainer(

@@ -15,9 +15,12 @@ class Caltech101DataModule(L.LightningDataModule):
             Resize(size=self.img_size),
             ToTensor()
         ])
+        self.label_map = {}
 
     def prepare_data(self):
-        datasets.Caltech101(root=self.data_dir, download=True)
+        data = datasets.Caltech101(root=self.data_dir, download=True)
+        for i, c in enumerate(data.categories):
+            self.label_map[i] = c
 
     def setup(self, stage):
         data = datasets.Caltech101(
