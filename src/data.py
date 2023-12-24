@@ -10,6 +10,7 @@ root_dir = os.path.abspath(os.path.join(dir_name, os.pardir))
 
 class Caltech101DataModule(L.LightningDataModule):
     def __init__(self, data_dir, batch_size, num_workers, img_size, split_props):
+        super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
