@@ -7,7 +7,7 @@ from typing import List
 import wandb
 
 class CLIPVisionClassifier(L.LightningModule):
-    """Image classifier that trains basic MLP on"""
+    """Image classifier that trains basic MLP on CLIP Embeddings."""
 
     def __init__(self, hidden_sizes:List, label_map):
             super().__init__()
