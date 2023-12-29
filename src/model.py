@@ -9,19 +9,20 @@ import wandb
 class CLIPVisionClassifier(L.LightningModule):
     """Image classifier that trains basic MLP on CLIP Embeddings."""
 
-    def __init__(self, hidden_sizes:List, label_map):
+    def __init__(self, lr, hidden_sizes:List, label_map):
             super().__init__()
+            self.save_hyperparameters()
+
+            self.lr = lr
+            self.label_map = label_map
 
             # Image processor for CLIP image encoder
             self.processor = CLIPImageProcessor.from_pretrained('openai/clip-vit-base-patch32', do_rescale=False , do_resize=True)
-
             # Image encoder used by CLIP
             self.encoder = CLIPVisionModelWithProjection.from_pretrained('openai/clip-vit-base-patch32')
             # Freeze CLIP model
             for param in self.encoder.parameters():
                 param.requires_grad = False
-
-            self.label_map = label_map
 
             # Lightweight neural net for embeddings
             hidden_sizes.insert(0, 512)
@@ -79,17 +80,18 @@ class CLIPVisionClassifier(L.LightningModule):
         return probs
 
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters(), lr=1e-3)
+        optimizer = optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
 
     def _get_preds_loss_accuracy(self, batch):
         x, y = batch
 
         # Get embeddings
-        inputs = self.processor(images=x, return_tensors='pt')
-        if torch.cuda.is_available():
-            inputs.to(device=torch.device('cuda'))
-        embeddings = self.encoder(**inputs).image_embeds
+        with torch.no_grad():
+            inputs = self.processor(images=x, return_tensors='pt')
+            if torch.cuda.is_available():
+                inputs.to(device=torch.device('cuda'))
+            embeddings = self.encoder(**inputs).image_embeds
 
         # Neural net
         logits = self.classifier(embeddings)

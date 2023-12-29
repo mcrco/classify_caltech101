@@ -16,9 +16,10 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config', help='name of config file (must be placed in config/ directory)')
     args = parser.parse_args()
     arg_dict = vars(args)
-    config_filename = os.path.join(root_dir, 'config', arg_dict['config'] if arg_dict['config'] is not None else 'config.json')
+    config_filename = arg_dict['config'] if arg_dict['config'] is not None else 'config.json'
+    config_path = os.path.join(root_dir, 'config', config_filename)
 
-    with open(config_filename) as config_file:
+    with open(config_path) as config_file:
         config = json.load(config_file)
 
     L.seed_everything(config['random_seed'], workers=True)
@@ -34,15 +35,17 @@ if __name__ == '__main__':
 
     model = CLIPVisionClassifier(
         hidden_sizes=config['hidden_sizes'], 
-        label_map=data_module.label_map
+        label_map=data_module.label_map,
+        lr=config['learning_rate']
     )
 
     trainer = L.Trainer(
-        logger=WandbLogger(log_model='all'), 
+        logger=WandbLogger(log_model='all', name=config_filename[:-5]), 
+        default_root_dir=os.path.join(root_dir, 'lightning_logs', config_filename[:-5]),
         max_epochs=config['num_epochs'],
         accelerator=config['accelerator'], 
         devices=config['devices'],
-        deterministic=True
+        deterministic=True,
     )
 
     trainer.fit(model, data_module)

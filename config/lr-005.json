@@ -9,7 +9,7 @@
     "test_prop": 0.1,
     "val_prop": 0.1,
     "num_epochs": 8,
-    "learning_rate": 0.001,
+    "learning_rate": 0.005,
     "image_width": 300,
     "image_height": 300,
     "num_workers": 2,
